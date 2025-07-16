@@ -37,13 +37,10 @@
 
     // ✅ إضافة مستمع عام لكل الرسائل لعرض الردود التي قد لا تتطابق مع ID معين
     window.addEventListener('message', (e) => {
-      console.log('📩 [RESPONSE]');
-      console.log('🌍 Origin:', e.origin);
-      console.log('📦 Data:', e.data);
-
-      const el = document.getElementById('output');
-      el.textContent += `\n\n📩 RESPONSE from ${e.origin}\n` + JSON.stringify(e.data, null, 2);
-    });
+  const el = document.getElementById('output');
+  el.textContent += `\n\n📩 [ALL MESSAGE] from ${e.origin}\n` + JSON.stringify(e.data, null, 2);
+  console.log('📥 Message received:', e);
+});
 
     window.onload = () => {
       ['getAccessToken', 'getToken', 'getContext'].forEach(method => callRPC(method));
