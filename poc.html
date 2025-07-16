@@ -13,39 +13,42 @@
   <pre id="output">⏳ Waiting for data from parent window...</pre>
 
   <script>
-    const log = (...args) => {
-      const el = document.getElementById('output');
-      const line = args.map(a =>
-        typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)
-      ).join(' ');
-      el.textContent += '\n' + line;
-      console.log(...args);
-    };
+  const log = (...args) => {
+    const el = document.getElementById('output');
+    const line = args.map(a =>
+      typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)
+    ).join(' ');
+    el.textContent += '\n' + line;
+    console.log(...args);
+  };
 
-    function callRPC(method, payload = {}) {
-      const id = crypto.randomUUID();
-      window.addEventListener('message', function listener(e) {
-        if (e.origin !== "https://tb.toloka.dev") return;
-        if (e.data?.id === id && e.data?.type === 'rpc') {
-          log(`✅ ${method}`, e.data.payload);
-          window.removeEventListener('message', listener);
-        }
-      });
-      window.parent.postMessage({ type: 'rpc', id, name: method, payload }, '*');
-      log(`📤 Sent ${method}`, { id, payload });
-    }
+  function callRPC(method, payload = {}) {
+    const id = crypto.randomUUID();
+    window.addEventListener('message', function listener(e) {
+      if (e.origin !== "https://tb.toloka.dev") return;
+      if (e.data?.id === id && e.data?.type === 'rpc') {
+        log(`✅ ${method}`, e.data.payload);
+        window.removeEventListener('message', listener);
+      }
+    });
+    window.parent.postMessage({ type: 'rpc', id, name: method, payload }, '*');
+    log(`📤 Sent ${method}`, { id, payload });
+  }
 
-    // ✅ إضافة مستمع عام لكل الرسائل لعرض الردود التي قد لا تتطابق مع ID معين
-    window.addEventListener('message', (e) => {
-  const el = document.getElementById('output');
-  el.textContent += `\n\n📩 [ALL MESSAGE] from ${e.origin}\n` + JSON.stringify(e.data, null, 2);
-  console.log('📥 Message received:', e);
-});
+  window.addEventListener('message', (e) => {
+    console.log('📩 [RESPONSE]');
+    console.log('🌍 Origin:', e.origin);
+    console.log('📦 Data:', e.data);
 
-    window.onload = () => {
-      ['getAccessToken', 'getToken', 'getContext'].forEach(method => callRPC(method));
-      callRPC('fetch', { url: '/api/me', requestInit: { method: 'GET' } });
-    };
-  </script>
+    const el = document.getElementById('output');
+    el.textContent += `\n\n📩 RESPONSE from ${e.origin}\n` + JSON.stringify(e.data, null, 2);
+  });
+
+  window.onload = () => {
+    ['getAccessToken', 'getToken', 'getContext'].forEach(method => callRPC(method));
+    callRPC('fetch', { url: '/api/me', requestInit: { method: 'GET' } });
+  };
+</script>
+
 </body>
 </html>
