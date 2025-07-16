@@ -9,7 +9,7 @@
   </style>
 </head>
 <body>
-  <h2>📡 PoC - RPC via postMessage</h2>
+  <h2>📡 PoC - getAccessToken / getToken / getContext / fetch</h2>
   <pre id="log">⏳ Waiting for responses...</pre>
 
   <script>
@@ -20,25 +20,26 @@
       console.log(...args);
     };
 
-    // استقبل كل الرسائل بدون فلترة id أو origin
-    window.addEventListener('message', e => {
-      log('📥 Message from parent:', e.origin, e.data);
-    });
-
     function callRPC(method, payload = {}) {
       const id = crypto.randomUUID();
-      window.parent.postMessage({ type: 'rpc', id, name: method, payload }, '*');
 
-      log(`[📤 ${method} Request sent...]`, {
-        id,
-        payload
+      window.addEventListener('message', function handler(e) {
+        if (e.origin !== 'https://tb.toloka.dev') return;
+        if (e.data?.id === id && e.data?.type === 'rpc') {
+          log(`✅ [${method}]`, e.data.payload);
+          window.removeEventListener('message', handler);
+        }
       });
+
+      window.parent.postMessage({ type: 'rpc', id, name: method, payload }, '*');
+      log(`📤 Sent ${method} with id ${id}`);
     }
 
     window.onload = () => {
-      ['getAccessToken', 'getToken', 'getContext'].forEach(m => callRPC(m));
-
-      // إضافة /api/me كـ fetch
+      // أرسل الأوامر عند تحميل الصفحة
+      ['getAccessToken', 'getToken', 'getContext'].forEach(method => callRPC(method));
+      
+      // طلب fetch لمعلومات المستخدم
       callRPC('fetch', {
         url: '/api/me',
         requestInit: { method: 'GET' }
