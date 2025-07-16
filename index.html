@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PostMessage PoC</title>
+  <style>
+    body {
+      background: #121212;
+      color: #00ff99;
+      font-family: monospace;
+      text-align: center;
+      padding-top: 50px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📡 PoC: PostMessage Test</h1>
+  <p>Sending messages to parent every 3 seconds...</p>
+
+  <script>
+    // إرسال رسالة بسيطة كل 3 ثوانٍ
+    setInterval(() => {
+      const payload = {
+        type: "test-message",
+        msg: "🔥 Hello from iframe at " + location.origin,
+        timestamp: new Date().toISOString()
+      };
+
+      window.parent.postMessage(payload, "*");
+
+      console.log("📤 Sent postMessage to parent:", payload);
+    }, 3000);
+
+    // استقبال أي رد من parent
+    window.addEventListener("message", (event) => {
+      console.log("📥 Received message from parent:", event.data);
+    });
+  </script>
+</body>
+</html>
