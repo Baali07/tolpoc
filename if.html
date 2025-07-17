@@ -1,41 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>🔥 VSCode PostMessage Test</title>
-</head>
-<body>
-  <h1>🚀 Sending postMessages to parent window...</h1>
-  <script>
-    const commands = [
-      { vscodeMessage: { command: "workbench.view.explorer" } },
-      { vscodeMessage: { command: "workbench.view.debug" } },
-      {
-        vscodeMessage: {
-          command: "editor.action.insertSnippet",
-          args: { snippet: "🔥 Hello from Amer!" }
+  <body>
+    <h1>Testing iframe same-origin chain</h1>
+    <script>
+      function testParent() {
+        try {
+          const sameOrigin = window.parent.location.origin === window.location.origin;
+          if (sameOrigin) {
+            alert("✅ Parent is same-origin!");
+            console.log("Parent document title: ", window.parent.document.title);
+          } else {
+            alert("❌ Parent is cross-origin.");
+          }
+        } catch (e) {
+          alert("⚠️ Cannot access parent: " + e.message);
         }
-      },
-      { vscodeMessage: { command: "workbench.action.toggleSidebarVisibility" } },
-      { vscodeMessage: { command: "workbench.action.togglePanel" } },
-      { vscodeMessage: { command: "workbench.action.reloadWindow" } }
-    ];
-
-    let index = 0;
-    function sendNext() {
-      if (index < commands.length) {
-        console.log("✅ Sending:", commands[index]);
-        window.parent.postMessage(commands[index], "*");
-        index++;
-        setTimeout(sendNext, 2000); // إرسال كل أمر بعد 2 ثواني
       }
-    }
 
-    // بدأ الإرسال بعد التحميل
-    window.onload = () => {
-      console.log("🚀 Starting message dispatch...");
-      sendNext();
-    };
-  </script>
-</body>
+      testParent();
+    </script>
+  </body>
 </html>
