@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>POC</title>
+  <title>POC1</title>
 </head>
 <body>
   <h1>Loading exploit...</h1>
@@ -11,9 +11,18 @@
     let callbackId = null;
 
     function maliciousAction() {
-      // هذا هو الكود الذي سينفذ داخل الـ parent
-      alert("🔥 PoC Executed from Iframe (callback triggered)");
-    }
+      const d = document.createElement("div");
+      d.innerText = "🔥 PoC Triggered!";
+      d.style.background = "red";
+      d.style.color = "white";
+      d.style.fontSize = "30px";
+      d.style.position = "fixed";
+      d.style.top = "10px";
+      d.style.left = "10px";
+      d.style.zIndex = "999999";
+      document.body.appendChild(d);
+}
+
 
     // هل يوجد scheduleAsync؟
     if (window.scheduleAsync) {
