@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg">
-  <script>
-    let u = "https://webhook.site/";
-    let w = window.open();
-    w.opener = null;
-    w.location = u;
-  </script>
-</svg>
