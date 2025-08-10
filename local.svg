@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <script>
+    alert("LocalStorage content:\n" + JSON.stringify(localStorage, null, 2));
+  </script>
+</svg>
